@@ -2,54 +2,36 @@
   <div class="container mt-5">
     <!-- Title and Search Bar -->
     <div class="text-center mb-4">
-      <h1>Welcome to EDnalyze</h1>
-      <p>Enter a coin symbol (e.g., BTCUSDT) to get analysis.</p>
+      <h1 class="fw-bold">🚀 Welcome to EDnalyze</h1>
+      <p class="text-muted">
+        Enter a coin symbol (e.g., BTC, ETH) to get analysis.
+      </p>
     </div>
 
     <!-- Search Section -->
-    <div class="d-flex justify-content-center mb-5">
-      <div class="input-group w-75">
+    <div class="d-flex justify-content-center mb-4">
+      <div class="input-group w-50">
         <input
+          v-model="searchQuery"
           type="text"
           class="form-control"
-          placeholder="Enter Coin Symbol"
-          v-model="coinSymbol"
+          placeholder="Enter Coin Symbol (e.g., BTC)"
         />
-        <button class="btn btn-primary" @click="fetchAnalysis">Analyze</button>
-      </div>
-    </div>
-
-    <!-- Analysis Result -->
-    <div v-if="analysisResult" class="mb-5">
-      <h4>Analysis Result for {{ coinSymbol }}</h4>
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <p><strong>Entry Point (CMP):</strong> {{ analysisResult.entryPoint }}</p>
-          <p><strong>Action:</strong> {{ analysisResult.action }}</p>
-          <p><strong>Target TP:</strong> {{ analysisResult.targetTP }}</p>
-          <p><strong>Stop Loss (SL):</strong> {{ analysisResult.stopLoss }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div v-if="loading" class="text-center my-4">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <button class="btn btn-primary" @click="analyzeCoin">Analyze</button>
       </div>
     </div>
 
     <!-- Dashboard Section -->
     <div class="row">
-      <!-- Crypto Section -->
-      <div class="col-12 mb-4">
-        <div class="card">
-          <div class="card-header bg-primary text-white">
-            <h5>Top 5 Crypto Gainers</h5>
+      <!-- Top 5 Crypto Gainers -->
+      <div class="col-12 col-lg-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">🔥 Top 5 Crypto Gainers</h5>
           </div>
-          <div class="card-body">
-            <table class="table table-striped table-hover">
-              <thead>
+          <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+              <thead class="table-light">
                 <tr>
                   <th>#</th>
                   <th>Coin</th>
@@ -59,30 +41,33 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(coin, index) in topCryptoGainers" :key="index">
+                <tr v-for="(coin, index) in topGainers" :key="coin.id">
                   <td>{{ index + 1 }}</td>
                   <td>
-                    <img :src="coin.image" alt="logo" class="coin-logo" />
-                    {{ coin.name }}
+                    <img :src="coin.image" class="coin-logo" />
+                    {{ coin.name }} ({{ coin.symbol.toUpperCase() }})
                   </td>
-                  <td>${{ formatNumber(coin.usd) }}</td>
-                  <td :class="(coin.usd_24h_vol || 0) > 0 ? 'text-success' : 'text-danger'">
-                    {{ (coin.usd_24h_vol || 0).toFixed(2) }}%
+                  <td>${{ coin.current_price.toLocaleString() }}</td>
+                  <td class="text-success fw-bold">
+                    {{ coin.price_change_percentage_24h.toFixed(2) }}%
                   </td>
-                  <td>${{ formatNumber(coin.usd_1y_change) }}</td>
+                  <td>${{ coin.market_cap.toLocaleString() }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+      </div>
 
-        <div class="card mt-3">
+      <!-- Top 5 Crypto Losers -->
+      <div class="col-12 col-lg-6 mb-4">
+        <div class="card shadow-sm">
           <div class="card-header bg-danger text-white">
-            <h5>Top 5 Crypto Losers</h5>
+            <h5 class="mb-0">📉 Top 5 Crypto Losers</h5>
           </div>
-          <div class="card-body">
-            <table class="table table-striped table-hover">
-              <thead>
+          <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+              <thead class="table-light">
                 <tr>
                   <th>#</th>
                   <th>Coin</th>
@@ -92,17 +77,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(coin, index) in topCryptoLosers" :key="index">
+                <tr v-for="(coin, index) in topLosers" :key="coin.id">
                   <td>{{ index + 1 }}</td>
                   <td>
-                    <img :src="coin.image" alt="logo" class="coin-logo" />
-                    {{ coin.name }}
+                    <img :src="coin.image" class="coin-logo" />
+                    {{ coin.name }} ({{ coin.symbol.toUpperCase() }})
                   </td>
-                  <td>${{ formatNumber(coin.usd) }}</td>
-                  <td :class="(coin.usd_24h_vol || 0) > 0 ? 'text-success' : 'text-danger'">
-                    {{ (coin.usd_24h_vol || 0).toFixed(2) }}%
+                  <td>${{ coin.current_price.toLocaleString() }}</td>
+                  <td class="text-danger fw-bold">
+                    {{ coin.price_change_percentage_24h.toFixed(2) }}%
                   </td>
-                  <td>${{ formatNumber(coin.usd_1y_change) }}</td>
+                  <td>${{ coin.market_cap.toLocaleString() }}</td>
                 </tr>
               </tbody>
             </table>
@@ -114,49 +99,46 @@
 </template>
 
 <script>
-import { getTopCryptoGainers, getTopCryptoLosers } from '../services/cryptoService'
+import { ref, onMounted } from "vue";
+import axios from "axios";
 
 export default {
-  name: 'Home',
-  data() {
-    return {
-      coinSymbol: '',
-      analysisResult: null,
-      topCryptoGainers: [],
-      topCryptoLosers: [],
-      loading: false,
-    }
-  },
-  async created() {
-    this.loading = true
-    try {
-      this.topCryptoGainers = await getTopCryptoGainers()
-      this.topCryptoLosers = await getTopCryptoLosers()
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      this.loading = false
-    }
-  },
-  methods: {
-    fetchAnalysis() {
-      if (this.coinSymbol) {
-        this.analysisResult = {
-          entryPoint: '45,000 USD',
-          action: 'Wait and See',
-          targetTP: '50,000 USD',
-          stopLoss: '42,000 USD',
-        }
+  setup() {
+    const topGainers = ref([]);
+    const topLosers = ref([]);
+    const searchQuery = ref("");
+
+    const fetchMarketData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5001/api/crypto/markets"
+        );
+        topGainers.value = response.data.topGainers;
+        topLosers.value = response.data.topLosers;
+      } catch (error) {
+        console.error("Error fetching market data:", error);
       }
-    },
-    formatNumber(value) {
-      return new Intl.NumberFormat('en-US').format(value || 0)
-    },
+    };
+
+    const analyzeCoin = () => {
+      if (!searchQuery.value) {
+        alert("Please enter a coin symbol!");
+        return;
+      }
+      alert(
+        `🔍 Analyzing ${searchQuery.value.toUpperCase()}... (Feature in progress!)`
+      );
+    };
+
+    onMounted(fetchMarketData);
+
+    return { topGainers, topLosers, searchQuery, analyzeCoin };
   },
-}
+};
 </script>
 
 <style scoped>
+/* Styling */
 .table th,
 .table td {
   text-align: center;
