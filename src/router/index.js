@@ -1,16 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/Home.vue'
+import Watchlist from '../components/Watchlist.vue'
 
-// Define routes
 const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home,
-  },
+  { path: '/', name: 'Home', component: Home },
+  { path: '/watchlist', name: 'Watchlist', component: Watchlist },
 ]
 
-// Create the router instance
 const router = createRouter({
   history: createWebHistory(),
   routes,
