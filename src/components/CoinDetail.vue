@@ -54,7 +54,7 @@
     <!-- Section: TradingView Chart -->
     <div v-if="coinData?.symbol" class="tradingview-widget-container mt-4">
       <iframe
-        :src="`https://www.tradingview.com/widgetembed/?symbol=BINANCE:${coinData.symbol.toUpperCase()}USDT`"
+        :src="`https://www.tradingview.com/widgetembed/?symbol=MEXC:${coinData.symbol.toUpperCase()}USDT`"
         width="100%"
         height="500px"
         frameborder="0"
@@ -70,6 +70,18 @@
       </div>
     </div>
 
+    <!-- Section: Coin Analysis -->
+    <div class="card shadow-sm mt-4">
+      <div class="card-body text-center">
+        <h4>📉 Coin Analysis</h4>
+        <p>
+          Would you like to see an analysis of this coin based on the current market data and
+          trends?
+        </p>
+        <button class="btn btn-primary" @click="showAnalysis">Yes, Show Analysis</button>
+      </div>
+    </div>
+
     <!-- Back Button -->
     <div class="text-center mt-4">
       <button class="btn btn-secondary" @click="$router.push('/')">🔙 Back to Home</button>
@@ -81,6 +93,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRoute } from 'vue-router'
+import Swal from 'sweetalert2' // Import SweetAlert2
 
 export default {
   setup() {
@@ -101,9 +114,18 @@ export default {
       }
     }
 
+    const showAnalysis = () => {
+      Swal.fire({
+        title: 'Coin Analysis',
+        text: 'The analysis feature is coming soon! Stay tuned.',
+        icon: 'info',
+        confirmButtonText: 'Close',
+      })
+    }
+
     onMounted(fetchCoinDetails)
 
-    return { coinData, loading }
+    return { coinData, loading, showAnalysis }
   },
 }
 </script>
@@ -114,5 +136,10 @@ export default {
   height: 100px;
   border-radius: 50%;
   margin-bottom: 10px;
+}
+
+.card-body button {
+  width: 200px;
+  margin-top: 15px;
 }
 </style>
