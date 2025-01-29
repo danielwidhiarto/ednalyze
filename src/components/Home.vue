@@ -53,6 +53,12 @@
               <h6 class="mb-0">{{ coin.item.name }}</h6>
               <p class="text-muted mb-0">{{ coin.item.symbol.toUpperCase() }}</p>
             </div>
+            <button
+              @click="toggleWatchlist(coin.item.id)"
+              class="btn btn-outline-warning btn-sm ms-auto"
+            >
+              ⭐ {{ isFavorite(coin.item.id) ? 'Remove' : 'Add' }}
+            </button>
           </div>
         </div>
       </div>
@@ -77,6 +83,7 @@
                     <th>Price (USD)</th>
                     <th>24h Change (%)</th>
                     <th>Market Cap (USD)</th>
+                    <th>Add to Watchlist</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,6 +98,14 @@
                       {{ coin.price_change_percentage_24h.toFixed(2) }}%
                     </td>
                     <td>${{ coin.market_cap.toLocaleString() }}</td>
+                    <td>
+                      <button
+                        @click="toggleWatchlist(coin.id)"
+                        class="btn btn-outline-warning btn-sm"
+                      >
+                        ⭐ {{ isFavorite(coin.id) ? 'Remove' : 'Add' }}
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -115,6 +130,7 @@
                     <th>Price (USD)</th>
                     <th>24h Change (%)</th>
                     <th>Market Cap (USD)</th>
+                    <th>Add to Watchlist</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -129,6 +145,14 @@
                       {{ coin.price_change_percentage_24h.toFixed(2) }}%
                     </td>
                     <td>${{ coin.market_cap.toLocaleString() }}</td>
+                    <td>
+                      <button
+                        @click="toggleWatchlist(coin.id)"
+                        class="btn btn-outline-warning btn-sm"
+                      >
+                        ⭐ {{ isFavorite(coin.id) ? 'Remove' : 'Add' }}
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -157,6 +181,19 @@ export default {
     const topLosers = ref([])
     const tradingViewUrl = ref('https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT')
 
+    const watchlist = ref(JSON.parse(localStorage.getItem('watchlist')) || [])
+
+    const toggleWatchlist = (coinId) => {
+      if (watchlist.value.includes(coinId)) {
+        watchlist.value = watchlist.value.filter((id) => id !== coinId)
+      } else {
+        watchlist.value.push(coinId)
+      }
+      localStorage.setItem('watchlist', JSON.stringify(watchlist.value))
+    }
+
+    const isFavorite = (coinId) => watchlist.value.includes(coinId)
+
     const fetchMarketData = async () => {
       try {
         // Fetch Global Market Data
@@ -183,7 +220,16 @@ export default {
 
     onMounted(fetchMarketData)
 
-    return { globalData, trendingCoins, topGainers, topLosers, tradingViewUrl, fetchMarketData }
+    return {
+      toggleWatchlist,
+      isFavorite,
+      globalData,
+      trendingCoins,
+      topGainers,
+      topLosers,
+      tradingViewUrl,
+      fetchMarketData,
+    }
   },
 }
 </script>
