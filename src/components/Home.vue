@@ -46,16 +46,23 @@
     <h3 class="mt-5 text-center">🔥 Trending Coins</h3>
     <div class="row mt-3">
       <div class="col-md-4" v-for="coin in trendingCoins" :key="coin.item.id">
-        <div class="card shadow-sm">
-          <div class="card-body d-flex align-items-center">
-            <img :src="coin.item.thumb" class="coin-logo me-3" />
-            <div>
-              <h6 class="mb-0">{{ coin.item.name }}</h6>
-              <p class="text-muted mb-0">{{ coin.item.symbol.toUpperCase() }}</p>
-            </div>
+        <div class="card shadow-sm trending-card">
+          <div class="card-body d-flex align-items-center justify-content-between">
+            <!-- Link ke halaman CoinDetail -->
+            <router-link
+              :to="'/coin/' + coin.item.id"
+              class="text-decoration-none d-flex align-items-center flex-grow-1"
+            >
+              <img :src="coin.item.thumb" class="coin-logo me-3" />
+              <div>
+                <h6 class="mb-0">{{ coin.item.name }}</h6>
+                <p class="text-muted mb-0">{{ coin.item.symbol.toUpperCase() }}</p>
+              </div>
+            </router-link>
+            <!-- Button Add to Watchlist -->
             <button
-              @click="toggleWatchlist(coin.item.id)"
-              class="btn btn-outline-warning btn-sm ms-auto"
+              @click.stop="toggleWatchlist(coin.item.id)"
+              class="btn btn-outline-warning btn-sm wishlist-btn"
             >
               ⭐ {{ isFavorite(coin.item.id) ? 'Remove' : 'Add' }}
             </button>
@@ -90,8 +97,10 @@
                   <tr v-for="(coin, index) in topGainers" :key="coin.id">
                     <td>{{ index + 1 }}</td>
                     <td class="d-flex align-items-center">
-                      <img :src="coin.image" class="coin-logo me-2" />
-                      {{ coin.name }} ({{ coin.symbol.toUpperCase() }})
+                      <router-link :to="'/coin/' + coin.id" class="text-decoration-none">
+                        <img :src="coin.image" class="coin-logo me-2" />
+                        {{ coin.name }} ({{ coin.symbol.toUpperCase() }})
+                      </router-link>
                     </td>
                     <td>${{ coin.current_price.toLocaleString() }}</td>
                     <td class="text-success fw-bold">
@@ -137,8 +146,10 @@
                   <tr v-for="(coin, index) in topLosers" :key="coin.id">
                     <td>{{ index + 1 }}</td>
                     <td class="d-flex align-items-center">
-                      <img :src="coin.image" class="coin-logo me-2" />
-                      {{ coin.name }} ({{ coin.symbol.toUpperCase() }})
+                      <router-link :to="'/coin/' + coin.id" class="text-decoration-none">
+                        <img :src="coin.image" class="coin-logo me-2" />
+                        {{ coin.name }} ({{ coin.symbol.toUpperCase() }})
+                      </router-link>
                     </td>
                     <td>${{ coin.current_price.toLocaleString() }}</td>
                     <td class="text-danger fw-bold">
@@ -239,5 +250,29 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
+}
+
+.trending-card {
+  transition: all 0.3s ease-in-out;
+}
+
+.trending-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.coin-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.wishlist-btn {
+  min-width: 85px;
+  transition: all 0.2s ease-in-out;
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.1);
 }
 </style>

@@ -24,9 +24,14 @@
                 <tbody>
                   <tr v-for="(coin, index) in watchlistData" :key="coin.id">
                     <td>{{ index + 1 }}</td>
-                    <td class="fw-bold text-uppercase">
-                      <img :src="coin.image" class="coin-logo" />
-                      {{ coin.name }} ({{ coin.symbol?.toUpperCase() || 'N/A' }})
+                    <td class="fw-bold text-uppercase d-flex align-items-center">
+                      <router-link
+                        :to="'/coin/' + coin.id"
+                        class="text-decoration-none coin-link d-flex align-items-center"
+                      >
+                        <img :src="coin.image" class="coin-logo me-2" />
+                        {{ coin.name }} ({{ coin.symbol?.toUpperCase() || 'N/A' }})
+                      </router-link>
                     </td>
                     <td>${{ coin.current_price?.toLocaleString() || 'N/A' }}</td>
                     <td
@@ -103,10 +108,23 @@ export default {
 }
 
 .coin-logo {
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
-  vertical-align: middle;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  transition: transform 0.2s ease-in-out;
+}
+
+.coin-link {
+  color: inherit;
+  transition: all 0.2s ease-in-out;
+}
+
+.coin-link:hover {
+  text-decoration: underline;
+  color: #f39c12;
+}
+
+.coin-logo:hover {
+  transform: scale(1.1);
 }
 </style>
