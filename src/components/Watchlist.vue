@@ -42,10 +42,7 @@
                       {{ coin.price_change_percentage_24h?.toFixed(2) || 'N/A' }}%
                     </td>
                     <td>
-                      <button
-                        @click="removeFromWatchlist(coin.id)"
-                        class="btn btn-outline-danger btn-sm"
-                      >
+                      <button @click="confirmRemove(coin.id)" class="btn btn-outline-danger btn-sm">
                         ❌ Remove
                       </button>
                     </td>
@@ -64,6 +61,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import Swal from 'sweetalert2' // Import SweetAlert2
 
 export default {
   setup() {
@@ -89,6 +87,23 @@ export default {
       }
     }
 
+    // SweetAlert2 confirmation before removing a coin
+    const confirmRemove = (coinId) => {
+      Swal.fire({
+        title: 'Apakah kamu yakin?',
+        text: 'Kamu mau menghapus koin ini dari watchlist kamu loh!.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it!',
+        cancelButtonText: 'Cancel',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          removeFromWatchlist(coinId)
+          Swal.fire('Removed!', 'Coin ini telah dihapus dari watchlist kamu!.', 'success')
+        }
+      })
+    }
+
     const removeFromWatchlist = (coinId) => {
       watchlist.value = watchlist.value.filter((id) => id !== coinId)
       localStorage.setItem('watchlist', JSON.stringify(watchlist.value))
@@ -97,7 +112,7 @@ export default {
 
     onMounted(fetchWatchlistData)
 
-    return { watchlist, watchlistData, removeFromWatchlist, loading }
+    return { watchlist, watchlistData, removeFromWatchlist, loading, confirmRemove }
   },
 }
 </script>
