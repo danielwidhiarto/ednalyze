@@ -32,6 +32,13 @@
       </div>
     </div>
 
+    <!-- Loading Indicator -->
+    <div v-if="loading" class="text-center my-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
     <!-- Dashboard Section -->
     <div class="row">
       <!-- Crypto Section -->
@@ -54,16 +61,15 @@
               <tbody>
                 <tr v-for="(coin, index) in topCryptoGainers" :key="index">
                   <td>{{ index + 1 }}</td>
-                  <td>{{ coin.name }}</td>
-                  <td>${{ coin.current_price.toLocaleString() }}</td>
-                  <td
-                    :class="
-                      (coin.price_change_percentage_24h || 0) > 0 ? 'text-success' : 'text-danger'
-                    "
-                  >
-                    {{ (coin.price_change_percentage_24h || 0).toFixed(2) }}%
+                  <td>
+                    <img :src="coin.image" alt="logo" class="coin-logo" />
+                    {{ coin.name }}
                   </td>
-                  <td>${{ coin.market_cap ? coin.market_cap.toLocaleString() : 'N/A' }}</td>
+                  <td>${{ formatNumber(coin.usd) }}</td>
+                  <td :class="(coin.usd_24h_vol || 0) > 0 ? 'text-success' : 'text-danger'">
+                    {{ (coin.usd_24h_vol || 0).toFixed(2) }}%
+                  </td>
+                  <td>${{ formatNumber(coin.usd_1y_change) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -88,16 +94,15 @@
               <tbody>
                 <tr v-for="(coin, index) in topCryptoLosers" :key="index">
                   <td>{{ index + 1 }}</td>
-                  <td>{{ coin.name }}</td>
-                  <td>${{ coin.current_price.toLocaleString() }}</td>
-                  <td
-                    :class="
-                      (coin.price_change_percentage_24h || 0) > 0 ? 'text-success' : 'text-danger'
-                    "
-                  >
-                    {{ (coin.price_change_percentage_24h || 0).toFixed(2) }}%
+                  <td>
+                    <img :src="coin.image" alt="logo" class="coin-logo" />
+                    {{ coin.name }}
                   </td>
-                  <td>${{ coin.market_cap ? coin.market_cap.toLocaleString() : 'N/A' }}</td>
+                  <td>${{ formatNumber(coin.usd) }}</td>
+                  <td :class="(coin.usd_24h_vol || 0) > 0 ? 'text-success' : 'text-danger'">
+                    {{ (coin.usd_24h_vol || 0).toFixed(2) }}%
+                  </td>
+                  <td>${{ formatNumber(coin.usd_1y_change) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -144,6 +149,9 @@ export default {
         }
       }
     },
+    formatNumber(value) {
+      return new Intl.NumberFormat('en-US').format(value || 0)
+    },
   },
 }
 </script>
@@ -153,5 +161,13 @@ export default {
 .table td {
   text-align: center;
   vertical-align: middle;
+}
+
+.coin-logo {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 50%;
 }
 </style>
