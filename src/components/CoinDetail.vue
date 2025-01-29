@@ -51,6 +51,17 @@
       </div>
     </div>
 
+    <!-- Section: TradingView Chart -->
+    <div v-if="coinData?.symbol" class="tradingview-widget-container mt-4">
+      <iframe
+        :src="`https://www.tradingview.com/widgetembed/?symbol=BINANCE:${coinData.symbol.toUpperCase()}USDT`"
+        width="100%"
+        height="500px"
+        frameborder="0"
+        allowfullscreen
+      ></iframe>
+    </div>
+
     <!-- Section: Coin Description -->
     <div class="card shadow-sm mt-4" v-if="coinData && coinData.description">
       <div class="card-body">
