@@ -9,6 +9,88 @@ const PORT = process.env.PORT || 5001
 app.use(cors())
 app.use(express.json())
 
+// API: AI Analysis untuk coin tertentu
+app.post('/api/crypto/analyze/:coinId', async (req, res) => {
+  try {
+    const { coinId } = req.params
+
+    // Ambil data coin dari CoinGecko untuk analisis
+    const coinResponse = await axios.get(`https://api.coingecko.com/api/v3/coins/${coinId}`)
+    const coinData = coinResponse.data
+
+    // Ambil historical data untuk model
+    const historyResponse = await axios.get(
+      `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`,
+      {
+        params: {
+          vs_currency: 'usd',
+          days: '30', // Data 30 hari terakhir
+        },
+      }
+    )
+
+    // Siapkan data untuk model AI
+    const analysisData = {
+      coin_id: coinId,
+      current_price: coinData.market_data.current_price.usd,
+      market_cap: coinData.market_data.market_cap.usd,
+      volume_24h: coinData.market_data.total_volume.usd,
+      price_change_24h: coinData.market_data.price_change_percentage_24h,
+      price_change_7d: coinData.market_data.price_change_percentage_7d,
+      price_change_30d: coinData.market_data.price_change_percentage_30d,
+      historical_prices: historyResponse.data.prices,
+      historical_volumes: historyResponse.data.total_volumes,
+    }
+
+    // Jalankan Python script untuk analisis AI
+    const pythonProcess = spawn('python3', [
+      path.join(__dirname, 'ai-service', 'predict.py'),
+      JSON.stringify(analysisData),
+    ])
+
+    let result = ''
+    let error = ''
+
+    pythonProcess.stdout.on('data', (data) => {
+      result += data.toString()
+    })
+
+    pythonProcess.stderr.on('data', (data) => {
+      error += data.toString()
+    })
+
+    pythonProcess.on('close', (code) => {
+      if (code === 0) {
+        try {
+          const prediction = JSON.parse(result)
+          res.json({
+            success: true,
+            coinId,
+            analysis: prediction,
+          })
+        } catch (parseError) {
+          res.status(500).json({
+            success: false,
+            error: 'Error parsing AI prediction result',
+          })
+        }
+      } else {
+        console.error('Python script error:', error)
+        res.status(500).json({
+          success: false,
+          error: 'AI analysis failed',
+        })
+      }
+    })
+  } catch (error) {
+    console.error('Error in AI analysis:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Gagal melakukan analisis AI',
+    })
+  }
+})
+
 // API: Ambil Data Pasar Global
 app.get('/api/global', async (req, res) => {
   try {
